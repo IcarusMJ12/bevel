@@ -1,0 +1,12 @@
+#!/usr/bin/env python
+
+from bevel import BDict
+
+if __name__ == '__main__':
+	from sys import argv
+	keyvalues = [key for key in argv[1].split(',')]
+	files = argv[2:]
+	bdicts = [BDict(fname) for fname in files]
+	for bdict in bdicts:
+		for item in bdict.lookup(keyvalues):
+			print bdict.name, ':', item[0], ':', item[1]
