@@ -20,7 +20,7 @@ if __name__ == '__main__':
 	parser.add_argument('--delete', '-d', action='append', help='a key to delete')
 	parser.add_argument('files', nargs='+')
 	args = parser.parse_args()
-	keyvalues = [tuple(pair.split('=')) for pair in args.substitute or []]
+	keyvalues = [tuple(pair.split('=', 1)) for pair in args.substitute or []]
 	for fname in args.files:
 		try:
 			bdict = BEnt(fname, args.key_separator)
