@@ -1,0 +1,1 @@
+This is a collection of tools for handling a variety of bencoded entities that is supposed to simulate such common UNIX command-line tools as grep, cat, and sed.

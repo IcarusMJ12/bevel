@@ -16,18 +16,18 @@ if __name__ == '__main__':
 	parser.add_argument('--key-separator', '-k', default=KEY_SEPARATOR, help='override default key separator (defaults to \''+KEY_SEPARATOR+'\')')
 	parser.add_argument('--fileguard', '-f', action='store_true', default=False, help='do not remove fileguard')
 	parser.add_argument('--in-place', '-i', default=False, action='store_true', help='replace values in place instead of printing result to stdout')
-	parser.add_argument('--substitute', '-s', nargs='*', default=[], help='a key=new_value tuple')
-	parser.add_argument('--delete', '-d', nargs='*', default=[], help='a key to delete')
+	parser.add_argument('--substitute', '-s', action='append', help='a key=new_value tuple')
+	parser.add_argument('--delete', '-d', action='append', help='a key to delete')
 	parser.add_argument('files', nargs='+')
 	args = parser.parse_args()
-	keyvalues = [tuple(pair.split('=')) for pair in args.substitute]
+	keyvalues = [tuple(pair.split('=')) for pair in args.substitute or []]
 	for fname in args.files:
 		try:
 			bdict = BDict(fname, args.key_separator)
 		except BTFailure:
 			print >> sys.stderr, 'skipping '+fname+' as an invalid bencoded entity...'
 			continue
-		bdict.delete(args.delete)
+		bdict.delete(args.delete or [])
 		bdict.set(keyvalues)
 		sys.stdout.write(bdict.dumps(keep_fileguard=args.fileguard)) if not args.in_place else bdict.save(keep_fileguard=args.fileguard)
 	try:
