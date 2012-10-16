@@ -24,7 +24,7 @@ if __name__ == '__main__':
 	for fname in args.files:
 		try:
 			bdict = BEnt(fname, args.key_separator)
-		except BTFailure:
+		except (BTFailure, IOError):
 			print >> sys.stderr, 'skipping '+fname+' as an invalid bencoded entity...'
 			continue
 		bdict.delete(args.delete or [])
