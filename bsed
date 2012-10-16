@@ -4,7 +4,7 @@
 Set values in a bencoded entity.
 """
 
-from bevel import BDict
+from bevel import BEnt
 from bencode.BTL import BTFailure
 import sys
 import argparse
@@ -23,7 +23,7 @@ if __name__ == '__main__':
 	keyvalues = [tuple(pair.split('=')) for pair in args.substitute or []]
 	for fname in args.files:
 		try:
-			bdict = BDict(fname, args.key_separator)
+			bdict = BEnt(fname, args.key_separator)
 		except BTFailure:
 			print >> sys.stderr, 'skipping '+fname+' as an invalid bencoded entity...'
 			continue

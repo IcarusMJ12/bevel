@@ -4,76 +4,94 @@
 Bencoded Entity Vewing, Editing, and Listing.
 """
 
-__all__ = ['BDict']
+__all__ = ['BEnt']
 
 from bencode import bencode, bdecode
 from fnmatch import fnmatch
+from string import printable
 
-def _btLookupR(bt_dict, result, ks = '.', path = []):
-    if isinstance(bt_dict, dict):
-        keys = bt_dict.keys()
+printables = set(printable)
+unprintables = '\r\n\x0b\x0c'
+
+def _isPrintable(s):
+    for c in s:
+        if c not in printables:
+            return False
+    return True
+
+def _makePrintable(s, separators):
+    assert('\\' not in separators)
+    s=s.replace('\\', '\\\\')
+    for c in separators:
+        s = s.replace(c, '\\'+c)
+    for c in unprintables:
+        s = s.replace(c, c.__repr__()[1:-1])
+    return s
+
+def _btLookupR(bt_ent, result, ks = '.', separator = '', path = []):
+    if isinstance(bt_ent, dict):
+        keys = bt_ent.keys()
         keys.sort()
         for k in keys:
-            _btLookupR(bt_dict[k], result, ks, path + [k])
+            _btLookupR(bt_ent[k], result, ks,separator, path + [_makePrintable(k, ks+separator) if isinstance(k, str) else k])
         return
-    elif isinstance(bt_dict, list):
-        for k in range(len(bt_dict)):
-            _btLookupR(bt_dict[k], result, ks, path + [k])
+    elif isinstance(bt_ent, list):
+        for k in range(len(bt_ent)):
+            _btLookupR(bt_ent[k], result, ks, separator, path + [_makePrintable(k, ks+separator) if isinstance(k, str) else k])
         return
     else:
-        if isinstance(bt_dict, str) and len(bt_dict)>32:
-            try:
-                bt_dict.decode('utf-8')
-            except UnicodeDecodeError:
-                result.append((ks.join([str(p) for p in path]), '0x'+str(bt_dict[0:16]).encode('hex')+'... ('+str(len(bt_dict))+')'))
+        if isinstance(bt_ent, str):
+            if _isPrintable(bt_ent):
+                bt_ent = _makePrintable(bt_ent, ks+separator)
+            else:
+                result.append((ks.join([str(p) for p in path]), '0x'+str(bt_ent[0:16]).encode('hex')+'... ('+str(len(bt_ent))+')'))
                 return
-            result.append((ks.join([str(p) for p in path]), bt_dict))
-            return
-        result.append((ks.join([str(p) for p in path]), bt_dict))
+        result.append((ks.join([str(p) for p in path]), bt_ent))
         return
 
-class BDict(object):
-    def __init__(self, fname, key_separator='.'):
+class BEnt(object):
+    def __init__(self, fname, key_separator='.', separator=''):
         self._fname = fname
-        self._dict = None
+        self._ent = None
         self._ks = key_separator
+        self._separator = separator
         self.load()
     
     def __getitem__(self, key):
-        return self._dict.__getitem__(key)
+        return self._ent.__getitem__(key)
 
     def __setitem__(self, key, value):
-        self._dict.__setitem__(key, value)
+        self._ent.__setitem__(key, value)
     
     def load(self):
         with open(self._fname, 'rb') as f:
-            self._dict=bdecode(f.read())
+            self._ent=bdecode(f.read())
     
     def dumps(self, keep_fileguard=False):
-        if not keep_fileguard and '.fileguard' in self._dict:
-            del self._dict['.fileguard']
-        return bencode(self._dict)
+        if not keep_fileguard and isinstance(self._ent, dict) and '.fileguard' in self._ent:
+            del self._ent['.fileguard']
+        return bencode(self._ent)
 
     def save(self, filename=None, keep_fileguard=False):
-        if not keep_fileguard and '.fileguard' in self._dict:
-            del self._dict['.fileguard']
+        if not keep_fileguard and isinstance(self._ent, dict) and '.fileguard' in self._ent:
+            del self._ent['.fileguard']
         with open(filename or self._fname, 'wb') as f:
-            f.write(bencode(self._dict))
+            f.write(bencode(self._ent))
     
     def __repr__(self):
-        return '<BDict('+self.name+')>'
+        return '<BEnt('+self.name+')>'
 
     def list(self):
         return self.lookup()
 
     def lookup(self, keys = ['*']):
         result = []
-        _btLookupR(self._dict, result, self._ks)
+        _btLookupR(self._ent, result, self._ks, self._separator)
         return [item for item in result if any([fnmatch(item[0], key) for key in keys])]
 
     def delete(self, keys):
         for key in keys:
-            here = self._dict
+            here = self._ent
             key = key.split(self._ks)
             for subkey in key[0:-1]:
                 try:
@@ -87,7 +105,7 @@ class BDict(object):
 
     def set(self, pairs):
         for key, value in pairs:
-            here = self._dict
+            here = self._ent
             key = key.split(self._ks)
             for subkey in key[0:-1]:
                 try:
@@ -100,6 +118,6 @@ class BDict(object):
                 here[int(key[-1])] = value
     
     def getName(self):
-        return self._fname
+        return _makePrintable(self._fname, self._ks+self._separator)
 
     name = property(getName)

@@ -3,7 +3,7 @@
 List key-value pairs in files containing bencoded entities.
 """
 
-from bevel import BDict
+from bevel import BEnt
 from bencode.BTL import BTFailure
 import sys
 import argparse
@@ -21,7 +21,7 @@ if __name__ == '__main__':
 	args = parser.parse_args()
 	for fname in args.files:
 		try:
-			bdict = BDict(fname, args.key_separator)
+			bdict = BEnt(fname, args.key_separator, args.separator)
 		except BTFailure:
 			print >> sys.stderr, 'skipping '+fname+' as an invalid bencoded entity...'
 			continue
