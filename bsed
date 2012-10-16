@@ -1,11 +1,36 @@
 #!/usr/bin/env python
 
-from bevel import BTDict
+"""
+Set values in a bencoded entity.
+"""
+
+from bevel import BDict
+from bencode.BTL import BTFailure
+import sys
+import argparse
+
+KEY_SEPARATOR = '.'
 
 if __name__ == '__main__':
-	from sys import argv
-	keyvalues = [tuple(pair.split('=')) for pair in argv[1].split(',')]
-	files = argv[2:]
-	bdicts = [BDict(fname) for fname in files]
-	for bdict in bdicts:
+	parser = argparse.ArgumentParser(description = __doc__)
+	parser.add_argument('--key-separator', '-k', default=KEY_SEPARATOR, help='override default key separator (defaults to \''+KEY_SEPARATOR+'\')')
+	parser.add_argument('--fileguard', '-f', action='store_true', default=False, help='do not remove fileguard')
+	parser.add_argument('--in-place', '-i', default=False, action='store_true', help='replace values in place instead of printing result to stdout')
+	parser.add_argument('--substitute', '-s', nargs='*', default=[], help='a key=new_value tuple')
+	parser.add_argument('--delete', '-d', nargs='*', default=[], help='a key to delete')
+	parser.add_argument('files', nargs='+')
+	args = parser.parse_args()
+	keyvalues = [tuple(pair.split('=')) for pair in args.substitute]
+	for fname in args.files:
+		try:
+			bdict = BDict(fname, args.key_separator)
+		except BTFailure:
+			print >> sys.stderr, 'skipping '+fname+' as an invalid bencoded entity...'
+			continue
+		bdict.delete(args.delete)
 		bdict.set(keyvalues)
+		sys.stdout.write(bdict.dumps(keep_fileguard=args.fileguard)) if not args.in_place else bdict.save(keep_fileguard=args.fileguard)
+	try:
+		sys.stdout.flush()
+	except IOError:
+		pass

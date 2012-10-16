@@ -1,12 +1,36 @@
 #!/usr/bin/env python
+"""
+Grep through keys and values in a bencoded entity.
+"""
 
 from bevel import BDict
+from bencode.BTL import BTFailure
+import sys
+import argparse
+
+SEPARATOR = ':'
+KEY_SEPARATOR = '.'
 
 if __name__ == '__main__':
-	from sys import argv
-	keyvalues = [key for key in argv[1].split(',')]
-	files = argv[2:]
-	bdicts = [BDict(fname) for fname in files]
-	for bdict in bdicts:
+	parser = argparse.ArgumentParser(description = __doc__)
+	parser.add_argument('--no-filename', '-H', action='store_true', default=False, help='suppress prefixing filenames to results')
+	parser.add_argument('--separator', '-s', default=SEPARATOR, help='override default separator (defaults to \''+SEPARATOR+'\')')
+	parser.add_argument('--key-separator', '-k', default=KEY_SEPARATOR, help='override default key separator (defaults to \''+KEY_SEPARATOR+'\')')
+	parser.add_argument('--print0', '-0', action='store_true', help='use null as line separator')
+	parser.add_argument('keys', nargs=1, help='a comma-separated list of keys, which may be globs')
+	parser.add_argument('files', nargs='+')
+	args = parser.parse_args()
+	keyvalues = [key for key in args.keys[0].split(',')]
+	for fname in args.files:
+		try:
+			bdict = BDict(fname, args.key_separator)
+		except BTFailure:
+			print >> sys.stderr, 'skipping '+fname+' as an invalid bencoded entity...'
+			continue
+		prefix = '' if args.no_filename else bdict.name+args.separator
 		for item in bdict.lookup(keyvalues):
-			print bdict.name, ':', item[0], ':', item[1]
+			sys.stdout.write(prefix+str(item[0])+args.separator+str(item[1])+('\0' if args.print0 else '\n'))
+	try:
+		sys.stdout.flush()
+	except IOError:
+		pass
