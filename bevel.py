@@ -4,7 +4,7 @@
 Bencoded Entity Vewing, Editing, and Listing.
 """
 
-__all__ = ['BEnt']
+__all__ = ['BEnt', 'tokenize']
 
 from bencode import bencode, bdecode
 from fnmatch import fnmatch
@@ -12,6 +12,24 @@ from string import printable
 
 printables = set(printable)
 unprintables = '\r\n\x0b\x0c'
+
+def tokenize(s, separators):
+    result = []
+    current = ''
+    escaped = False
+    for i in xrange(len(s)):
+        if escaped:
+            escaped = False
+            current += s[i]
+        elif s[i] == '\\':
+            escaped = True
+        elif s[i] in separators:
+            result.append(current)
+            current = ''
+        else:
+            current += s[i]
+    result.append(current)
+    return result
 
 def _isPrintable(s):
     for c in s:
@@ -92,7 +110,7 @@ class BEnt(object):
     def delete(self, keys):
         for key in keys:
             here = self._ent
-            key = key.split(self._ks)
+            key = tokenize(key, self._ks)
             for subkey in key[0:-1]:
                 try:
                     here = here[subkey]

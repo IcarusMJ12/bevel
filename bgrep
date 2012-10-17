@@ -3,7 +3,7 @@
 Grep through keys and values in a bencoded entity.
 """
 
-from bevel import BEnt
+from bevel import BEnt, tokenize
 from bencode.BTL import BTFailure
 import sys
 import argparse
@@ -20,7 +20,7 @@ if __name__ == '__main__':
 	parser.add_argument('keys', nargs=1, help='a comma-separated list of keys, which may be globs')
 	parser.add_argument('files', nargs='+')
 	args = parser.parse_args()
-	keyvalues = [key for key in args.keys[0].split(',')]
+	keyvalues = [key for key in tokenize(args.keys[0],',')]
 	for fname in args.files:
 		try:
 			bdict = BEnt(fname, args.key_separator, args.separator)

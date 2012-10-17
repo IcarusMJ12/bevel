@@ -4,7 +4,7 @@
 Set values in a bencoded entity.
 """
 
-from bevel import BEnt
+from bevel import BEnt, tokenize
 from bencode.BTL import BTFailure
 import sys
 import argparse
@@ -20,7 +20,7 @@ if __name__ == '__main__':
 	parser.add_argument('--delete', '-d', action='append', help='a key to delete')
 	parser.add_argument('files', nargs='+')
 	args = parser.parse_args()
-	keyvalues = [tuple(pair.split('=', 1)) for pair in args.substitute or []]
+	keyvalues = [tuple(tokenize(pair,'=')) for pair in args.substitute or []]
 	for fname in args.files:
 		try:
 			bdict = BEnt(fname, args.key_separator)
