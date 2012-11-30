@@ -16,11 +16,14 @@ if __name__ == '__main__':
 	parser.add_argument('--key-separator', '-k', default=KEY_SEPARATOR, help='override default key separator (defaults to \''+KEY_SEPARATOR+'\')')
 	parser.add_argument('--fileguard', '-f', action='store_true', default=False, help='do not remove fileguard')
 	parser.add_argument('--in-place', '-i', default=False, action='store_true', help='replace values in place instead of printing result to stdout')
-	parser.add_argument('--substitute', '-s', action='append', help='a key=new_value tuple')
+	parser.add_argument('--substitute', '-s', action='append', help='a key=new_value tuple (prefix hex values with 0x)')
 	parser.add_argument('--delete', '-d', action='append', help='a key to delete')
 	parser.add_argument('files', nargs='+')
 	args = parser.parse_args()
 	keyvalues = [tuple(tokenize(pair,'=')) for pair in args.substitute or []]
+	for i in xrange(len(keyvalues)):
+		if keyvalues[i][1][0:2] == '0x':
+			keyvalues[i] = (keyvalues[i][0], keyvalues[i][1][2:].decode('hex'))
 	for fname in args.files:
 		try:
 			bdict = BEnt(fname, args.key_separator)

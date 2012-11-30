@@ -10,8 +10,8 @@ from bencode import bencode, bdecode
 from fnmatch import fnmatch
 from string import printable
 
-printables = set(printable)
-unprintables = '\r\n\x0b\x0c'
+PRINTABLES = set(printable)
+UNPRINTABLES = '\r\n\x0b\x0c'
 
 def tokenize(s, separators):
     result = []
@@ -33,7 +33,7 @@ def tokenize(s, separators):
 
 def _isPrintable(s):
     for c in s:
-        if c not in printables:
+        if c not in PRINTABLES:
             return False
     return True
 
@@ -42,7 +42,7 @@ def _makePrintable(s, separators):
     s=s.replace('\\', '\\\\')
     for c in separators:
         s = s.replace(c, '\\'+c)
-    for c in unprintables:
+    for c in UNPRINTABLES:
         s = s.replace(c, c.__repr__()[1:-1])
     return s
 
