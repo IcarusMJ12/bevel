@@ -1,0 +1,4 @@
+1. Get python 2.6 or later.
+2. Optionally edit setup.cfg to change the path where the executable scripts will be installed to.
+3. Run 'python setup.py build && sudo python setup.py install'
+4. You should now be able to invoke all of the scripts from the commandline.  They all take the --help flag.
