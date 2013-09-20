@@ -46,23 +46,23 @@ def _makePrintable(s, separators):
         s = s.replace(c, c.__repr__()[1:-1])
     return s
 
-def _btLookupR(bt_ent, result, ks = '.', separator = '', path = []):
+def _btLookupR(bt_ent, result, ks = '.', separator = '', path = [], max_length = 16):
     if isinstance(bt_ent, dict):
         keys = bt_ent.keys()
         keys.sort()
         for k in keys:
-            _btLookupR(bt_ent[k], result, ks,separator, path + [_makePrintable(k, ks+separator) if isinstance(k, str) else k])
+            _btLookupR(bt_ent[k], result, ks,separator, path + [_makePrintable(k, ks+separator) if isinstance(k, str) else k], max_length=max_length)
         return
     elif isinstance(bt_ent, list):
         for k in range(len(bt_ent)):
-            _btLookupR(bt_ent[k], result, ks, separator, path + [_makePrintable(k, ks+separator) if isinstance(k, str) else k])
+            _btLookupR(bt_ent[k], result, ks, separator, path + [_makePrintable(k, ks+separator) if isinstance(k, str) else k], max_length=max_length)
         return
     else:
         if isinstance(bt_ent, str):
             if _isPrintable(bt_ent):
                 bt_ent = _makePrintable(bt_ent, ks+separator)
             else:
-                result.append((ks.join([str(p) for p in path]), '0x'+str(bt_ent[0:16]).encode('hex')+'... ('+str(len(bt_ent))+')'))
+                result.append((ks.join([str(p) for p in path]), '0x'+str(bt_ent[0:max_length]).encode('hex')+'... ('+str(len(bt_ent))+')'))
                 return
         result.append((ks.join([str(p) for p in path]), bt_ent))
         return
@@ -99,12 +99,12 @@ class BEnt(object):
     def __repr__(self):
         return '<BEnt('+self.name+')>'
 
-    def list(self):
-        return self.lookup()
+    def list(self, max_length = 16):
+        return self.lookup(max_length=max_length)
 
-    def lookup(self, keys = ['*']):
+    def lookup(self, keys = ['*'], max_length=16):
         result = []
-        _btLookupR(self._ent, result, self._ks, self._separator)
+        _btLookupR(self._ent, result, self._ks, self._separator, max_length=max_length)
         return [item for item in result if any([fnmatch(item[0], key) for key in keys])]
 
     def delete(self, keys):

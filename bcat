@@ -10,6 +10,7 @@ import argparse
 
 SEPARATOR = ':'
 KEY_SEPARATOR = '.'
+MAX_LENGTH = 16
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description = __doc__)
@@ -17,6 +18,7 @@ if __name__ == '__main__':
 	parser.add_argument('--separator', '-s', default=SEPARATOR, help='override default separator (defaults to \''+SEPARATOR+'\')')
 	parser.add_argument('--key-separator', '-k', default=KEY_SEPARATOR, help='override default key separator (defaults to \''+KEY_SEPARATOR+'\')')
 	parser.add_argument('--print0', '-0', action='store_true', help='use null as line separator')
+	parser.add_argument('--max-length', '-m', default=MAX_LENGTH, type=int, help='set maximum binary string length to print (defaults to '+str(MAX_LENGTH)+')')
 	parser.add_argument('files', nargs='+')
 	args = parser.parse_args()
 	for fname in args.files:
@@ -26,7 +28,7 @@ if __name__ == '__main__':
 			print >> sys.stderr, 'skipping '+fname+' as an invalid bencoded entity...'
 			continue
 		prefix = '' if args.no_filename else bdict.name+args.separator
-		for item in bdict.list():
+		for item in bdict.list(args.max_length):
 			sys.stdout.write(prefix+str(item[0])+args.separator+str(item[1])+('\0' if args.print0 else '\n'))
 	try:
 		sys.stdout.flush()
