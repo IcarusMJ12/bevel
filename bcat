@@ -18,7 +18,7 @@ if __name__ == '__main__':
 	parser.add_argument('--separator', '-s', default=SEPARATOR, help='override default separator (defaults to \''+SEPARATOR+'\')')
 	parser.add_argument('--key-separator', '-k', default=KEY_SEPARATOR, help='override default key separator (defaults to \''+KEY_SEPARATOR+'\')')
 	parser.add_argument('--print0', '-0', action='store_true', help='use null as line separator')
-	parser.add_argument('--max-length', '-m', default=MAX_LENGTH, type=int, help='set maximum binary string length to print (defaults to '+str(MAX_LENGTH)+')')
+	parser.add_argument('--max-length', '-m', default=MAX_LENGTH, type=int, help='set maximum binary string length to print (defaults to '+str(MAX_LENGTH)+'), negative value for infinite')
 	parser.add_argument('files', nargs='+')
 	args = parser.parse_args()
 	for fname in args.files:

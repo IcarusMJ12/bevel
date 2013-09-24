@@ -62,7 +62,7 @@ def _btLookupR(bt_ent, result, ks = '.', separator = '', path = [], max_length =
             if _isPrintable(bt_ent):
                 bt_ent = _makePrintable(bt_ent, ks+separator)
             else:
-                result.append((ks.join([str(p) for p in path]), '0x'+str(bt_ent[0:max_length]).encode('hex')+'... ('+str(len(bt_ent))+')'))
+                result.append((ks.join([str(p) for p in path]), '0x'+str(bt_ent[0:max_length if max_length>=0 else len(bt_ent)]).encode('hex')+'... ('+str(len(bt_ent))+')'))
                 return
         result.append((ks.join([str(p) for p in path]), bt_ent))
         return

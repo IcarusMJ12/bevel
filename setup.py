@@ -3,7 +3,7 @@
 from setuptools import setup
 
 setup(name = 'bevel',
-        version = '0.1.2',
+        version = '0.1.3',
         description = 'a selection of tools for viewing and editing bencoded entities',
         author = 'Igor Kaplounenko',
         author_email = 'igor@bittorrent.com',
